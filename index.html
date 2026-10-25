@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculator Working Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <span class="material-symbols-rounded menu-icon">sort</span>
+            <h1>Calculator Working Time</h1>
+            <span class="material-symbols-rounded profile-icon">account_circle</span>
+        </div>
+    </header>
+
+    <main id="app-content">
+        
+        <section id="view-inicio" class="screen active">
+            <div class="dashboard-padding">
+                <div class="card main-card">
+                    <div class="card-top">
+                        <span class="material-symbols-rounded">wallet</span>
+                        <span class="fecha-hoy" id="fecha-dashboard">Hoy</span>
+                    </div>
+                    <div class="card-balance">
+                        <p id="inicio-total-horas">0.00 hrs acumuladas</p>
+                        <h2 id="inicio-total-dinero">Q 0.00</h2>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="switchScreen('view-jornadas', 1)">
+                        <div class="icon-circle"><span class="material-symbols-rounded">add</span></div>
+                        <p>Nuevo Turno</p>
+                    </button>
+                    <button class="action-btn" onclick="switchScreen('view-informes', 2)">
+                        <div class="icon-circle"><span class="material-symbols-rounded">analytics</span></div>
+                        <p>Reportes</p>
+                    </button>
+                </div>
+            </div>
+
+            <div class="dark-sheet">
+                <div class="sheet-header">
+                    <h3>Historial de Jornadas</h3>
+                    <span class="material-symbols-rounded" style="font-size: 1.2rem; opacity: 0.7;">history</span>
+                </div>
+                
+                <div id="inicio-lista-jornadas">
+                    <p style="color: #94a3b8; text-align: center; margin-top: 20px;">No hay jornadas registradas.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-jornadas" class="screen">
+            <div class="dashboard-padding">
+                <div class="form-container">
+                    <h2 class="section-title">Registrar Jornada</h2>
+                    <form id="form-jornada">
+                        
+                        <div class="form-group">
+                            <label>Fecha de Entrada</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">calendar_month</span>
+                                <input type="text" id="jornada-fecha" class="form-control" placeholder="YYYY-MM-DD" required readonly onclick="openDatePicker()">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Hora de Entrada</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">schedule</span>
+                                <input type="text" id="jornada-inicio" class="form-control" placeholder="00:00" required readonly onclick="openTimePicker('jornada-inicio')">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Hora de Salida</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">update</span>
+                                <input type="text" id="jornada-fin" class="form-control" placeholder="00:00" required readonly onclick="openTimePicker('jornada-fin')">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Pausa no remunerada (minutos)</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">coffee</span>
+                                <input type="number" id="jornada-pausa" class="form-control" value="0" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Recargo Festivo</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">celebration</span>
+                                <select id="jornada-tipo-festivo" class="form-control" style="appearance: auto; cursor: pointer; color: var(--main-dark);">
+                                    <option value="none">Día normal (Sin recargo)</option>
+                                    <option value="all">Todo el turno es festivo</option>
+                                    <option value="start">Solo entrada (Antes de medianoche)</option>
+                                    <option value="end">Solo salida (Después de medianoche)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observaciones (opcional)</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">edit_note</span>
+                                <input type="text" id="jornada-notas" class="form-control" placeholder="Ej. Turno extra">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" id="btn-guardar-jornada">Guardar Jornada</button>
+                        <button type="button" class="btn-secondary" id="btn-cancelar-edicion" style="display: none;" onclick="cancelarEdicion()">Cancelar Edición</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-informes" class="screen">
+            <div class="dashboard-padding">
+                <div class="form-container">
+                    <h2 class="section-title">Generar Informe</h2>
+                    
+                    <div id="reporte-contenido" class="report-box">
+                        <div class="report-header">
+                            <span class="material-symbols-rounded" style="font-size: 40px; color: var(--accent-blue);">description</span>
+                            <h3>Reporte de Horas</h3>
+                            <p id="reporte-perfil"></p>
+                        </div>
+                        <div id="resumen-totales" class="report-totals"></div>
+                        <div id="tabla-informe" class="report-list"></div>
+                    </div>
+
+                    <button class="btn-primary" onclick="descargarPDF()" style="margin-top: 20px;">
+                        <span class="material-symbols-rounded">share</span> Compartir PDF
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-perfil" class="screen">
+            <div class="dashboard-padding">
+                <div class="form-container">
+                    <h2 class="section-title">Datos Laborales</h2>
+                    <form id="form-perfil">
+                        <div class="form-group">
+                            <label>Nombre o Alias</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">badge</span>
+                                <input type="text" id="perfil-nombre" class="form-control" placeholder="Ej. Juan Pérez">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Moneda</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">payments</span>
+                                <input type="text" id="perfil-moneda" class="form-control" placeholder="Ej. Q o $">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Tarifa por hora</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">monetization_on</span>
+                                <input type="number" id="perfil-tarifa" class="form-control" placeholder="Ej. 15.00" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Recargo festivo (%)</label>
+                            <div class="input-wrapper">
+                                <span class="material-symbols-rounded">percent</span>
+                                <input type="number" id="perfil-festivo" class="form-control" placeholder="Ej. 100" value="100">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar Perfil</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" data-target="view-inicio" data-index="0">
+            <span class="material-symbols-rounded">home</span>
+            <span>Inicio</span>
+        </div>
+        <div class="nav-item" data-target="view-jornadas" data-index="1">
+            <span class="material-symbols-rounded">add_circle</span>
+            <span>Registro</span>
+        </div>
+        <div class="nav-item" data-target="view-informes" data-index="2">
+            <span class="material-symbols-rounded">pie_chart</span>
+            <span>Informes</span>
+        </div>
+        <div class="nav-item" data-target="view-perfil" data-index="3">
+            <span class="material-symbols-rounded">person</span>
+            <span>Perfil</span>
+        </div>
+    </nav>
+
+    <!-- Modales -->
+    <div id="time-picker-modal" class="modal-overlay">
+        <div class="time-picker-card">
+            <h3>Seleccionar Hora</h3>
+            <div class="time-picker-columns">
+                <div class="time-column" id="tp-hours"></div>
+                <div class="time-separator">:</div>
+                <div class="time-column" id="tp-minutes"></div>
+            </div>
+            <div class="time-picker-actions">
+                <button type="button" class="btn-cancel" onclick="closeTimePicker()">Cancelar</button>
+                <button type="button" class="btn-confirm" onclick="confirmTimePicker()">Establecer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="date-picker-modal" class="modal-overlay">
+        <div class="date-picker-card">
+            <div class="dp-header">
+                <button type="button" onclick="prevMonth()"><span class="material-symbols-rounded">chevron_left</span></button>
+                <h3 id="dp-month-year">Mes Año</h3>
+                <button type="button" onclick="nextMonth()"><span class="material-symbols-rounded">chevron_right</span></button>
+            </div>
+            <div class="dp-weekdays">
+                <span>D</span><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+            </div>
+            <div class="dp-days" id="dp-days-grid"></div>
+            <div class="time-picker-actions" style="margin-top: 15px;">
+                <button type="button" class="btn-cancel" onclick="closeDatePicker()">Cancelar</button>
+                <button type="button" class="btn-confirm" onclick="confirmDatePicker()">Establecer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-toast" class="toast-hidden">
+        <span class="material-symbols-rounded" id="toast-icon">check_circle</span>
+        <span id="toast-message">Mensaje</span>
+    </div>
+
+    <script src="./js/app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+                                </html>
+                                
