@@ -6,7 +6,8 @@
     <title>Calculator Working Time</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
     <link rel="stylesheet" href="./css/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <!-- Librería para la gráfica -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -126,7 +127,7 @@
         <section id="view-informes" class="screen">
             <div class="dashboard-padding">
                 
-                <!-- Gráfica de Rendimiento -->
+                <!-- NUEVO: Gráfica de Rendimiento -->
                 <div class="form-container" style="margin-bottom: 20px; padding-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 class="section-title" style="margin: 0; font-size: 1.1rem;">Rendimiento</h2>
@@ -221,7 +222,7 @@
         </div>
     </nav>
 
-    <!-- Modales -->
+    <!-- Modal de Rueda de Tiempo (Scroll Picker) -->
     <div id="time-picker-modal" class="modal-overlay">
         <div class="time-picker-card">
             <h3>Seleccionar Hora</h3>
@@ -237,6 +238,7 @@
         </div>
     </div>
 
+    <!-- Modal de Calendario Personalizado -->
     <div id="date-picker-modal" class="modal-overlay">
         <div class="date-picker-card">
             <div class="dp-header">
@@ -255,11 +257,13 @@
         </div>
     </div>
 
+    <!-- Burbuja de Notificación Inteligente (Toast) -->
     <div id="custom-toast" class="toast-hidden">
         <span class="material-symbols-rounded" id="toast-icon">check_circle</span>
         <span id="toast-message">Mensaje</span>
     </div>
 
+    <script src="./js/native-bridge.js"></script>
     <script src="./js/app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
