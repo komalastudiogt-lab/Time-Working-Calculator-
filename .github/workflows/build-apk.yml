@@ -1,0 +1,81 @@
+name: Compilar APK Android
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Preparar Capacitor e inyectar puente nativo
+        run: |
+          mkdir www
+          cp index.html www/
+          cp -r css www/
+          cp -r js www/
+          
+          npm init -y
+          npm install @capacitor/core@latest @capacitor/cli@latest @capacitor/android@latest @capacitor/assets@latest @capacitor/filesystem@latest @capacitor/share@latest esbuild
+          
+          cat << 'EOF' > native-bridge.js
+          import { Filesystem, Directory } from '@capacitor/filesystem';
+          import { Share } from '@capacitor/share';
+          window.NativeShare = async function(base64Data, filename) {
+              const result = await Filesystem.writeFile({
+                  path: filename,
+                  data: base64Data,
+                  directory: Directory.Cache
+              });
+              await Share.share({
+                  title: 'Reporte de Horas',
+                  text: 'Adjunto mis jornadas laborales.',
+                  url: result.uri,
+                  dialogTitle: 'Compartir o Guardar PDF'
+              });
+          };
+          EOF
+          
+          npx esbuild native-bridge.js --bundle --outfile=www/js/native-bridge.js
+          
+          sed -i 's|<script src="./js/app.js"></script>|<script src="./js/native-bridge.js"></script><script src="./js/app.js"></script>|g' www/index.html
+          
+          npx cap init "Calculator Working Time" "com.calculatorworkingtime.app" --web-dir www
+          npx cap add android
+          
+          mkdir -p assets
+          if [ -f "icon.png" ]; then
+            mv icon.png assets/icon.png
+            npx @capacitor/assets generate --android
+          fi
+
+          npx cap sync android
+
+      - name: Compilar el APK con Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Guardar el APK generado
+        uses: actions/upload-artifact@v4
+        with:
+          name: CalculatorWorkingTime-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          
