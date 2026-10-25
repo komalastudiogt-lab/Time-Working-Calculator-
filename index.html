@@ -6,6 +6,7 @@
     <title>Calculator Working Time</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
     <link rel="stylesheet" href="./css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
 <body>
 
@@ -47,8 +48,9 @@
             <div class="dark-sheet">
                 <div class="sheet-header">
                     <h3>Historial de Jornadas</h3>
-                    <span class="material-symbols-rounded" style="font-size: 1.2rem; opacity: 0.7;">history</span>
+                    <span class="material-symbols-rounded" style="font-size: 1.2rem; opacity: 0.7;">swipe_left</span>
                 </div>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: -15px; margin-bottom: 20px;">Desliza un turno hacia la izquierda para opciones</p>
                 
                 <div id="inicio-lista-jornadas">
                     <p style="color: #94a3b8; text-align: center; margin-top: 20px;">No hay jornadas registradas.</p>
@@ -123,6 +125,22 @@
 
         <section id="view-informes" class="screen">
             <div class="dashboard-padding">
+                
+                <!-- Gráfica de Rendimiento -->
+                <div class="form-container" style="margin-bottom: 20px; padding-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 class="section-title" style="margin: 0; font-size: 1.1rem;">Rendimiento</h2>
+                        <select id="filtro-grafica" class="form-control" style="width: auto; padding: 8px 30px 8px 15px; font-size: 0.85rem; height: auto;" onchange="renderizarInforme()">
+                            <option value="15">15 Días</option>
+                            <option value="30">30 Días</option>
+                            <option value="all">Todo</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 180px; width: 100%;">
+                        <canvas id="workChart"></canvas>
+                    </div>
+                </div>
+
                 <div class="form-container">
                     <h2 class="section-title">Generar Informe</h2>
                     
@@ -245,5 +263,4 @@
     <script src="./js/app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
-                                </html>
-                                
+</html>
