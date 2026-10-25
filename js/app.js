@@ -166,17 +166,15 @@ window.renderizarInicio = function() {
 
         const hInv = [...h].reverse(); cont.innerHTML = ''; 
         for (const j of hInv) {
-            const item = document.createElement('div'); item.className = 'swipe-container'; 
+            const item = document.createElement('div'); item.className = 'jornada-item'; 
             let fVis = j.fechaMostrar || j.fecha; let icClass = (j.tipoFestivo && j.tipoFestivo !== 'none') ? "celebration" : "work_history";
             item.innerHTML = `
-                <div class="swipe-content">
-                    <div class="jornada-icon"><span class="material-symbols-rounded">${icClass}</span></div>
-                    <div class="jornada-info"><h4>${fVis}</h4><p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p></div>
-                    <div class="jornada-amount"><h4>${j.moneda} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
-                </div>
-                <div class="swipe-actions">
-                    <button onclick="prepararEdicion('${j.id}')" class="swipe-btn edit"><span class="material-symbols-rounded">edit</span></button>
-                    <button onclick="eliminarJornada('${j.id}')" class="swipe-btn delete"><span class="material-symbols-rounded">delete</span></button>
+                <div class="jornada-icon"><span class="material-symbols-rounded">${icClass}</span></div>
+                <div class="jornada-info"><h4>${fVis}</h4><p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p></div>
+                <div class="jornada-amount"><h4>${j.moneda} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
+                <div class="jornada-actions">
+                    <button onclick="prepararEdicion('${j.id}')" class="btn-action-sm edit"><span class="material-symbols-rounded" style="font-size: 18px;">edit</span></button>
+                    <button onclick="eliminarJornada('${j.id}')" class="btn-action-sm delete"><span class="material-symbols-rounded" style="font-size: 18px;">delete</span></button>
                 </div>
             `;
             cont.appendChild(item);
@@ -271,4 +269,4 @@ window.descargarPDF = function() {
     const e = document.getElementById('reporte-contenido'); const btn = document.querySelector('button[onclick="descargarPDF()"]');
     if(!e || !btn) return; // @ts-ignore
     const oTxt = btn.innerHTML; // @ts-ignore
-    btn.innerHTML = '<span class="material-symbols-rounded">h
+    btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Ge
