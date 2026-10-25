@@ -166,15 +166,17 @@ window.renderizarInicio = function() {
 
         const hInv = [...h].reverse(); cont.innerHTML = ''; 
         for (const j of hInv) {
-            const item = document.createElement('div'); item.className = 'jornada-item'; 
+            const item = document.createElement('div'); item.className = 'swipe-container'; 
             let fVis = j.fechaMostrar || j.fecha; let icClass = (j.tipoFestivo && j.tipoFestivo !== 'none') ? "celebration" : "work_history";
             item.innerHTML = `
-                <div class="jornada-icon"><span class="material-symbols-rounded">${icClass}</span></div>
-                <div class="jornada-info"><h4>${fVis}</h4><p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p></div>
-                <div class="jornada-amount"><h4>${j.moneda} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
-                <div class="jornada-actions">
-                    <button onclick="prepararEdicion('${j.id}')" class="btn-action-sm edit"><span class="material-symbols-rounded" style="font-size: 18px;">edit</span></button>
-                    <button onclick="eliminarJornada('${j.id}')" class="btn-action-sm delete"><span class="material-symbols-rounded" style="font-size: 18px;">delete</span></button>
+                <div class="swipe-content">
+                    <div class="jornada-icon"><span class="material-symbols-rounded">${icClass}</span></div>
+                    <div class="jornada-info"><h4>${fVis}</h4><p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p></div>
+                    <div class="jornada-amount"><h4>${j.moneda} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
+                </div>
+                <div class="swipe-actions">
+                    <button onclick="prepararEdicion('${j.id}')" class="swipe-btn edit"><span class="material-symbols-rounded">edit</span></button>
+                    <button onclick="eliminarJornada('${j.id}')" class="swipe-btn delete"><span class="material-symbols-rounded">delete</span></button>
                 </div>
             `;
             cont.appendChild(item);
@@ -224,23 +226,44 @@ if (formJornada) {
     });
 }
 
+let workChartInstancia = null;
 window.renderizarInforme = function() {
     try {
         const h = JSON.parse(localStorage.getItem('wtc_jornadas')) || []; const p = JSON.parse(localStorage.getItem('wtc_perfil')) || { nombre: 'Usuario', moneda: '' };
         const cTot = document.getElementById('resumen-totales'); const cTab = document.getElementById('tabla-informe');
         const pNom = document.getElementById('reporte-perfil'); if(pNom) pNom.textContent = `Trabajador: ${p.nombre || 'No especificado'}`;
+        const eFiltro = document.getElementById('filtro-grafica'); // @ts-ignore
+        const filtroDias = eFiltro ? eFiltro.value : '15';
 
         if (h.length === 0) {
-            if(cTot) cTot.innerHTML = ''; if(cTab) cTab.innerHTML = '<p style="text-align:center; color: #94a3b8;">No hay datos para el informe.</p>'; return; 
+            if(cTot) cTot.innerHTML = ''; if(cTab) cTab.innerHTML = '<p style="text-align:center; color: #94a3b8;">No hay datos para el informe.</p>'; 
+            if(workChartInstancia) workChartInstancia.destroy(); return; 
         }
 
         let jornadasOrdenadas = [...h].sort((a,b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+        if(filtroDias !== 'all') { const fechaLimite = new Date(); fechaLimite.setDate(fechaLimite.getDate() - parseInt(filtroDias)); jornadasOrdenadas = jornadasOrdenadas.filter(j => new Date(j.fecha) >= fechaLimite); }
+
         let tH = 0; let tD = 0; let hTab = ''; const jInverso = [...jornadasOrdenadas].reverse();
         for (const j of jInverso) { tH += parseFloat(j.horasTrabajadas); tD += parseFloat(j.totalEstimado); let fM = (j.tipoFestivo && j.tipoFestivo !== 'none') ? '*' : ''; let fVis = j.fechaMostrar || j.fecha;
             hTab += `<div class="reporte-item"><div><strong>${fVis}</strong> ${fM}<br><span style="color: gray; font-size: 0.8rem;">${j.inicio} - ${j.fin}</span></div><div style="text-align: right;">${j.horasTrabajadas} hrs<br><strong>${p.moneda} ${j.totalEstimado}</strong></div></div>`;
         }
         if(cTot) cTot.innerHTML = `<div><span class="material-symbols-rounded">schedule</span><br>Total Horas<span>${tH.toFixed(2)}</span></div><div><span class="material-symbols-rounded">payments</span><br>Total Ingresos<span>${p.moneda} ${tD.toFixed(2)}</span></div>`;
         if(cTab) cTab.innerHTML = hTab;
+
+        // Gráfica Chart.js
+        const chartLabels = []; const chartData = []; const agrupado = {};
+        jornadasOrdenadas.forEach(j => { let diaVisual = j.fecha.substring(5); if(!agrupado[diaVisual]) agrupado[diaVisual] = 0; agrupado[diaVisual] += parseFloat(j.horasTrabajadas); });
+        for(let date in agrupado) { chartLabels.push(date); chartData.push(agrupado[date]); }
+
+        const ctx = document.getElementById('workChart'); if(workChartInstancia) workChartInstancia.destroy();
+        // @ts-ignore
+        if(ctx && window.Chart) { // @ts-ignore
+            workChartInstancia = new window.Chart(ctx, {
+                type: 'bar',
+                data: { labels: chartLabels, datasets: [{ label: 'Horas Trabajadas', data: chartData, backgroundColor: '#3b82f6', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' } }, x: { grid: { display: false } } } }
+            });
+        }
     } catch(e) { console.log(e); }
 };
 
@@ -248,26 +271,4 @@ window.descargarPDF = function() {
     const e = document.getElementById('reporte-contenido'); const btn = document.querySelector('button[onclick="descargarPDF()"]');
     if(!e || !btn) return; // @ts-ignore
     const oTxt = btn.innerHTML; // @ts-ignore
-    btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Generando...';
-    const opt = { margin: 15, filename: 'Reporte_WorkingTime.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }};
-    // @ts-ignore
-    html2pdf().set(opt).from(e).toPdf().output('datauristring').then(function (pdf) {
-        try { // @ts-ignore
-            if (window.NativeShare) { const b64 = pdf.split(',')[1]; const n = "Reporte_WorkingTime_" + Date.now() + ".pdf"; // @ts-ignore
-                window.NativeShare(b64, n).then(() => { btn.innerHTML = oTxt; }).catch(err => { console.log(err); btn.innerHTML = oTxt; });
-            } else { // @ts-ignore
-                html2pdf().set(opt).from(e).save().then(() => { btn.innerHTML = oTxt; }); }
-        } catch (error) { window.showToast('Error: ' + error, 'error'); // @ts-ignore
-        btn.innerHTML = oTxt; }
-    }).catch(function(err) { window.showToast('Error PDF: ' + err, 'error'); // @ts-ignore
-    btn.innerHTML = oTxt; });
-};
-
-window.addEventListener('DOMContentLoaded', () => {
-    try {
-        initTimePicker(); cargarPerfil(); window.renderizarInicio(); window.renderizarInforme();
-    } catch (e) {
-        alert("Error al iniciar: " + e);
-    }
-});
-          
+    btn.innerHTML = '<span class="material-symbols-rounded">h
