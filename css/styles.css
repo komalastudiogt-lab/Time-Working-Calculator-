@@ -94,14 +94,13 @@ input[type="date"] { appearance: none; -webkit-appearance: none; }
 #custom-toast.toast-visible { bottom: 110px; }
 #toast-icon { color: var(--accent-light); font-size: 28px; }
 
-/* El escudo maestro: display: none evita que Android congele la pantalla */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.85); display: none; justify-content: center; align-items: center; z-index: 10000; }
 .modal-overlay.visible { display: flex; }
 
-.time-picker-card, .date-picker-card { background: var(--white); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow-soft); transform: translateY(30px); transition: transform 0.3s ease; }
-.time-picker-card { width: 320px; } .date-picker-card { width: 340px; }
-.modal-overlay.visible .time-picker-card, .modal-overlay.visible .date-picker-card { transform: translateY(0); }
-.time-picker-card h3 { text-align: center; color: var(--main-dark); margin-bottom: 25px; font-size: 1.2rem; }
+.time-picker-card, .date-picker-card, .confirm-card { background: var(--white); border-radius: var(--radius-lg); padding: 25px; box-shadow: var(--shadow-soft); transform: translateY(30px); transition: transform 0.3s ease; }
+.time-picker-card { width: 320px; } .date-picker-card { width: 340px; } .confirm-card { width: 300px; text-align: center; }
+.modal-overlay.visible .time-picker-card, .modal-overlay.visible .date-picker-card, .modal-overlay.visible .confirm-card { transform: translateY(0); }
+.time-picker-card h3, .confirm-card h3 { color: var(--main-dark); margin-bottom: 25px; font-size: 1.2rem; }
 .time-picker-columns { display: flex; justify-content: center; align-items: center; background: #f8fafc; border-radius: 16px; padding: 10px; position: relative; }
 .time-picker-columns::before { content: ''; position: absolute; top: 50%; left: 10px; right: 10px; height: 50px; background: rgba(37, 99, 235, 0.15); transform: translateY(-50%); border-radius: 12px; pointer-events: none; }
 .time-column { height: 150px; width: 80px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
@@ -109,6 +108,7 @@ input[type="date"] { appearance: none; -webkit-appearance: none; }
 .time-item { height: 50px; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: 700; color: var(--text-muted); scroll-snap-align: center; }
 .time-item.empty { height: 50px; }
 .time-separator { font-size: 1.8rem; font-weight: 700; color: var(--main-dark); padding: 0 15px; }
+
 .dp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; color: var(--main-dark); }
 .dp-header button { background: rgba(37, 99, 235, 0.1); border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; color: var(--accent-blue); cursor: pointer; }
 .dp-header h3 { font-size: 1.1rem; font-weight: 600; text-transform: capitalize; }
@@ -118,7 +118,13 @@ input[type="date"] { appearance: none; -webkit-appearance: none; }
 .dp-day:active { background: rgba(37, 99, 235, 0.2); }
 .dp-day.empty { cursor: default; }
 .dp-day.selected { background: var(--accent-blue) !important; color: var(--white) !important; font-weight: 600; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
-.time-picker-actions { display: flex; justify-content: space-between; margin-top: 25px; }
-.time-picker-actions button { padding: 12px 20px; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; flex: 1; margin: 0 5px; }
+
+.time-picker-actions { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
+.time-picker-actions button { padding: 12px 20px; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; flex: 1; }
 .btn-cancel { background: #e2e8f0; color: var(--text-muted); }
 .btn-confirm { background: var(--accent-blue); color: var(--white); }
+.btn-danger { background: #ef4444; color: var(--white); }
+
+.confirm-icon { width: 60px; height: 60px; background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+.confirm-icon span { font-size: 32px; }
+.confirm-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; line-height: 1.4; }
