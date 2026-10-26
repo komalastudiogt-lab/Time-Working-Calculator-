@@ -24,6 +24,11 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
+      - name: Generar Firma Fija (Para permitir actualizaciones sin conflictos)
+        run: |
+          mkdir -p ~/.android
+          keytool -genkeypair -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug" -noprompt
+
       - name: Preparar Capacitor e inyectar puente nativo
         run: |
           mkdir www
@@ -73,9 +78,6 @@ jobs:
           npx cap init "Calculator Working Time" "com.calculatorworkingtime.app" --web-dir www
           npx cap add android
           
-          # Generar certificado de firma fijo y permanente
-          keytool -genkey -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "C=US, O=Android, CN=Android Debug" -noprompt
-
           mkdir -p assets
           if [ -f "icon.png" ]; then
             mv icon.png assets/icon.png
