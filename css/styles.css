@@ -13,12 +13,25 @@
   --shadow-dark: 0 -10px 20px rgba(0,0,0,0.1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+/* Evitar selección y copiado de texto en toda la app por defecto */
+* { 
+  margin: 0; padding: 0; box-sizing: border-box; 
+  font-family: system-ui, -apple-system, sans-serif; 
+  -webkit-tap-highlight-color: transparent; 
+  -webkit-user-select: none; 
+  user-select: none; 
+}
+
+/* Permitir selección únicamente en inputs y textareas */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 body { background: linear-gradient(135deg, #f0f7fa 0%, #dbeafe 100%); color: var(--text-main); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 header { padding: 20px 25px; background: transparent; z-index: 10; flex-shrink: 0; }
 .header-content { display: flex; justify-content: space-between; align-items: center; }
 
-/* Tipografía gruesa y destacada para la abreviatura CWT */
 .header-brand { 
   font-size: 1.6rem; 
   font-weight: 900; 
@@ -54,7 +67,6 @@ main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .sheet-header { display: flex; justify-content: space-between; align-items: center; color: var(--white); margin-bottom: 20px; }
 .sheet-header h3 { font-size: 1.1rem; font-weight: 600; }
 
-/* === TARJETAS CON EFECTO DE PROFUNDIDAD Y DEGRADADO (OPCIÓN 3) === */
 .swipe-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-bottom: 15px; border-radius: var(--radius-md); background-color: transparent; }
 .swipe-container::-webkit-scrollbar { display: none; }
 .swipe-content { 
@@ -80,7 +92,6 @@ main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .jornada-info h4 { color: var(--white); font-size: 1rem; font-weight: 700; margin-bottom: 2px;}
 .jornada-info p { color: #94a3b8; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Números del dinero más destacados y limpios */
 .jornada-amount { text-align: right; }
 .jornada-amount h4 { color: var(--white); font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; }
 .jornada-amount p { color: var(--accent-light); font-size: 0.85rem; font-weight: 600; }
