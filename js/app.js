@@ -7,7 +7,6 @@ window.showToast = function(message, icon = 'check_circle') {
     setTimeout(() => { toast.className = 'toast-hidden'; }, 3500);
 };
 
-// === NUEVA FUNCIÓN: RELLENAR HORA ACTUAL ===
 window.setNowTime = function() {
     const now = new Date();
     const y = now.getFullYear();
@@ -121,7 +120,6 @@ function cargarPerfil() {
 let idEditando = null;
 let idParaEliminar = null;
 
-// === MODAL DE BORRADO PERSONALIZADO ===
 window.eliminarJornada = function(id) {
     idParaEliminar = id;
     const m = document.getElementById('delete-confirm-modal');
