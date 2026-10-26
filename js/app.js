@@ -42,14 +42,25 @@ window.exportData = function() {
             perfil: localStorage.getItem('wtc_perfil'),
             jornadas: localStorage.getItem('wtc_jornadas')
         };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `CWT_Respaldo_${Date.now()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        window.showToast('Respaldo exportado con éxito', 'download');
+        const jsonString = JSON.stringify(data, null, 2);
+        const filename = `CWT_Respaldo_${Date.now()}.json`;
+
+        if (window.NativeSaveJSON) {
+            window.NativeSaveJSON(jsonString, filename).then(() => {
+                window.showToast('Respaldo generado con éxito', 'download');
+            }).catch(err => {
+                window.showToast('Error al exportar respaldo', 'error');
+            });
+        } else {
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            window.showToast('Respaldo exportado con éxito', 'download');
+        }
     } catch(e) {
         window.showToast('Error al exportar', 'error');
     }
