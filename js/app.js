@@ -247,6 +247,18 @@ window.confirmDeleteModal = function() {
     window.closeDeleteModal();
 };
 
+// === CAMBIAR ESTADO DE PAGO (POR COBRAR / PAGADO) ===
+window.toggleEstadoPago = function(id) {
+    let h = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
+    const j = h.find(x => x.id === id);
+    if(j) {
+        j.pagado = !j.pagado;
+        localStorage.setItem('wtc_jornadas', JSON.stringify(h));
+        renderizarInicio();
+        window.showToast(j.pagado ? 'Marcado como Pagado' : 'Marcado como Por Cobrar', 'payments');
+    }
+};
+
 let currentChartFilterValue = '15';
 
 window.openChartFilterModal = function() {
@@ -314,11 +326,18 @@ function renderizarInicio() {
         item.className = 'swipe-container'; 
         let fVis = j.fechaMostrar || j.fecha;
         let icClass = (j.tipoFestivo && j.tipoFestivo !== 'none') ? "celebration" : "work_history";
+        let isPagado = j.pagado === true;
+        let badgeClass = isPagado ? "paid" : "pending";
+        let badgeText = isPagado ? "Pagado" : "Por Cobrar";
         
         item.innerHTML = `
             <div class="swipe-content">
                 <div class="jornada-icon"><span class="material-symbols-rounded">${icClass}</span></div>
-                <div class="jornada-info"><h4>${fVis}</h4><p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p></div>
+                <div class="jornada-info">
+                    <h4>${fVis}</h4>
+                    <p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p>
+                    <span class="status-badge ${badgeClass}" onclick="toggleEstadoPago('${j.id}')">${badgeText}</span>
+                </div>
                 <div class="jornada-amount"><h4>${j.moneda} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
             </div>
             <div class="swipe-actions">
@@ -361,13 +380,21 @@ if(formJornada) {
         let subNot = 'Normal'; if(tipoFestivo === 'all') subNot = 'Festivo Completo'; else if(tipoFestivo === 'start') subNot = 'Festivo (Entrada)'; else if(tipoFestivo === 'end') subNot = 'Festivo (Salida)';
         let nFin = notasUsuario ? `${subNot} | ${notasUsuario}` : subNot;
 
-        const nJor = { id: idEditando ? idEditando : Date.now().toString(), fecha: fecha, fechaMostrar: fMos, inicio, fin, pausaMinutos, tipoFestivo: tipoFestivo, notas: nFin, horasTrabajadas: hrsTrab.toFixed(2), totalEstimado: totEst.toFixed(2), moneda: perfil.moneda };
-        let h = JSON.parse(localStorage.getItem('wtc_jornadas')) || []; let msjA = "";
-        
-        if (idEditando) { const idx = h.findIndex(j => j.id === idEditando); if(idx !== -1) h[idx] = nJor; msjA = `¡Turno actualizado!\nTotal: ${perfil.moneda} ${totEst.toFixed(2)}`; } 
-        else { h.push(nJor); msjA = `¡Turno guardado!\nTotal: ${perfil.moneda} ${totEst.toFixed(2)}`; }
+        // Conservar el estado de pagado si se está editando
+        let estadoPagadoPrevio = false;
+        let hActual = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
+        if (idEditando) {
+            const existente = hActual.find(j => j.id === idEditando);
+            if (existente) estadoPagadoPrevio = !!existente.pagado;
+        }
 
-        localStorage.setItem('wtc_jornadas', JSON.stringify(h)); 
+        const nJor = { id: idEditando ? idEditando : Date.now().toString(), fecha: fecha, fechaMostrar: fMos, inicio, fin, pausaMinutos, tipoFestivo: tipoFestivo, notas: nFin, horasTrabajadas: hrsTrab.toFixed(2), totalEstimado: totEst.toFixed(2), moneda: perfil.moneda, pagado: estadoPagadoPrevio };
+        let msjA = "";
+        
+        if (idEditando) { const idx = hActual.findIndex(j => j.id === idEditando); if(idx !== -1) hActual[idx] = nJor; msjA = `¡Turno actualizado!\nTotal: ${perfil.moneda} ${totEst.toFixed(2)}`; } 
+        else { hActual.push(nJor); msjA = `¡Turno guardado!\nTotal: ${perfil.moneda} ${totEst.toFixed(2)}`; }
+
+        localStorage.setItem('wtc_jornadas', JSON.stringify(hActual)); 
         window.cancelarEdicion(); setTimeout(() => { window.showToast(msjA, 'task_alt'); }, 150);
     });
 }
