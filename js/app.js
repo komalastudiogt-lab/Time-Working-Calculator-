@@ -255,6 +255,7 @@ window.toggleEstadoPago = function(id) {
         j.pagado = !j.pagado;
         localStorage.setItem('wtc_jornadas', JSON.stringify(h));
         renderizarInicio();
+        renderizarInforme();
         window.showToast(j.pagado ? 'Marcado como Pagado' : 'Marcado como Por Cobrar', 'payments');
     }
 };
@@ -380,7 +381,6 @@ if(formJornada) {
         let subNot = 'Normal'; if(tipoFestivo === 'all') subNot = 'Festivo Completo'; else if(tipoFestivo === 'start') subNot = 'Festivo (Entrada)'; else if(tipoFestivo === 'end') subNot = 'Festivo (Salida)';
         let nFin = notasUsuario ? `${subNot} | ${notasUsuario}` : subNot;
 
-        // Conservar el estado de pagado si se está editando
         let estadoPagadoPrevio = false;
         let hActual = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
         if (idEditando) {
@@ -400,15 +400,17 @@ if(formJornada) {
 }
 
 // ==========================================
-// 7. LÓGICA DE INFORMES, CHART Y PDF
+// 7. LÓGICA DE INFORMES, CHART Y PDF (DIVIDIDO: POR COBRAR / PAGADOS + BOTÓN ELIMINAR)
 // ==========================================
 let workChartInstancia = null;
 
 window.renderizarInforme = function() {
     const h = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
     const p = JSON.parse(localStorage.getItem('wtc_perfil')) || { nombre: 'Usuario', moneda: '' };
-    const cTot = document.getElementById('resumen-totales'); const cTab = document.getElementById('tabla-informe');
-    const rPerfil = document.getElementById('reporte-perfil'); if(rPerfil) rPerfil.textContent = `Trabajador: ${p.nombre || 'No especificado'}`;
+    const cTot = document.getElementById('resumen-totales'); 
+    const cTab = document.getElementById('tabla-informe');
+    const rPerfil = document.getElementById('reporte-perfil'); 
+    if(rPerfil) rPerfil.textContent = `Trabajador: ${p.nombre || 'No especificado'}`;
     
     const filtroDias = currentChartFilterValue;
 
@@ -427,16 +429,63 @@ window.renderizarInforme = function() {
         jornadasOrdenadas = jornadasOrdenadas.filter(j => new Date(j.fecha) >= fechaLimite);
     }
 
-    let tH = 0; let tD = 0; let hTab = '';
+    let tH = 0; let tD = 0; 
+    let porCobrarItems = [];
+    let pagadosItems = [];
+
     const jInverso = [...jornadasOrdenadas].reverse();
     
     for (const j of jInverso) {
-        tH += parseFloat(j.horasTrabajadas); tD += parseFloat(j.totalEstimado);
-        let fM = (j.tipoFestivo && j.tipoFestivo !== 'none') ? '*' : ''; let fVis = j.fechaMostrar || j.fecha;
-        hTab += `<div class="reporte-item"><div><strong>${fVis}</strong> ${fM}<br><span style="color: gray; font-size: 0.8rem;">${j.inicio} - ${j.fin}</span></div><div style="text-align: right;">${j.horasTrabajadas} hrs<br><strong>${p.moneda} ${j.totalEstimado}</strong></div></div>`;
+        tH += parseFloat(j.horasTrabajadas); 
+        tD += parseFloat(j.totalEstimado);
+        
+        let fM = (j.tipoFestivo && j.tipoFestivo !== 'none') ? '*' : ''; 
+        let fVis = j.fechaMostrar || j.fecha;
+        let isPagado = j.pagado === true;
+        
+        let htmlItem = `
+            <div class="report-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem;">
+                <div style="flex: 1; min-width: 0;">
+                    <strong>${fVis}</strong> ${fM}<br>
+                    <span style="color: gray; font-size: 0.75rem;">${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</span>
+                </div>
+                <div style="text-align: right; margin-right: 10px;">
+                    ${j.horasTrabajadas} hrs<br>
+                    <strong>${p.moneda} ${j.totalEstimado}</strong>
+                </div>
+                <button onclick="eliminarJornada('${j.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">delete</span>
+                </button>
+            </div>
+        `;
+
+        if (isPagado) {
+            pagadosItems.push(htmlItem);
+        } else {
+            porCobrarItems.push(htmlItem);
+        }
     }
-    if(cTot) cTot.innerHTML = `<div><span class="material-symbols-rounded">schedule</span><br>Total Horas<span>${tH.toFixed(2)}</span></div><div><span class="material-symbols-rounded">payments</span><br>Total Ingresos<span>${p.moneda} ${tD.toFixed(2)}</span></div>`; 
-    if(cTab) cTab.innerHTML = hTab;
+
+    if(cTot) {
+        cTot.innerHTML = `<div><span class="material-symbols-rounded">schedule</span><br>Total Horas<span>${tH.toFixed(2)}</span></div><div><span class="material-symbols-rounded">payments</span><br>Total Ingresos<span>${p.moneda} ${tD.toFixed(2)}</span></div>`; 
+    }
+
+    let htmlCompleto = '';
+    htmlCompleto += `<div style="font-weight: 700; color: #d97706; margin-bottom: 5px; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;"><span class="material-symbols-rounded" style="font-size:18px;">schedule</span> Por Cobrar (${porCobrarItems.length})</div>`;
+    if(porCobrarItems.length > 0) {
+        htmlCompleto += porCobrarItems.join('');
+    } else {
+        htmlCompleto += `<p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 15px;">No hay turnos por cobrar en este período.</p>`;
+    }
+
+    htmlCompleto += `<div style="font-weight: 700; color: #059669; margin: 20px 0 5px 0; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;"><span class="material-symbols-rounded" style="font-size:18px;">check_circle</span> Pagados (${pagadosItems.length})</div>`;
+    if(pagadosItems.length > 0) {
+        htmlCompleto += pagadosItems.join('');
+    } else {
+        htmlCompleto += `<p style="color: #94a3b8; font-size: 0.8rem;">No hay turnos pagados en este período.</p>`;
+    }
+
+    if(cTab) cTab.innerHTML = htmlCompleto;
 
     const chartLabels = [];
     const chartData = [];
