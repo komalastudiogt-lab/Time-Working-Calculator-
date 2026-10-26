@@ -144,6 +144,27 @@ window.confirmDeleteModal = function() {
     window.closeDeleteModal();
 };
 
+// === CONTROL DEL MODAL DE FILTRO DE RENDIMIENTO ===
+let currentChartFilterValue = '15';
+
+window.openChartFilterModal = function() {
+    const m = document.getElementById('chart-filter-modal');
+    if(m) m.classList.add('visible');
+};
+
+window.closeChartFilterModal = function() {
+    const m = document.getElementById('chart-filter-modal');
+    if(m) m.classList.remove('visible');
+};
+
+window.selectChartFilter = function(value, label) {
+    currentChartFilterValue = value;
+    const lbl = document.getElementById('filtro-grafica-label');
+    if(lbl) lbl.innerText = label;
+    window.closeChartFilterModal();
+    window.renderizarInforme();
+};
+
 window.prepararEdicion = function(id) {
     const h = JSON.parse(localStorage.getItem('wtc_jornadas')) || []; const j = h.find(x => x.id === id); if(!j) return;
     idEditando = id; // @ts-ignore
@@ -256,8 +277,8 @@ window.renderizarInforme = function() {
     const cTot = document.getElementById('resumen-totales'); const cTab = document.getElementById('tabla-informe');
     // @ts-ignore
     document.getElementById('reporte-perfil').textContent = `Trabajador: ${p.nombre || 'No especificado'}`;
-    // @ts-ignore
-    const filtroDias = document.getElementById('filtro-grafica').value;
+    
+    const filtroDias = currentChartFilterValue;
 
     if (h.length === 0) { // @ts-ignore
         cTot.innerHTML = ''; // @ts-ignore
