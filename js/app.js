@@ -38,13 +38,13 @@ window.closeMenuModal = function() {
 
 window.exportData = function() {
     try {
-        const perfilObj = JSON.parse(localStorage.getItem('wtc_perfil') || '{}');
-        const jornadasObj = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]');
+        const perfilStr = localStorage.getItem('wtc_perfil') || '{}';
+        const jornadasStr = localStorage.getItem('wtc_jornadas') || '[]';
         const data = {
             version: "1.0",
             app: "CWT",
-            perfil: perfilObj,
-            jornadas: jornadasObj
+            perfil: JSON.parse(perfilStr),
+            jornadas: JSON.parse(jornadasStr)
         };
         const jsonString = JSON.stringify(data, null, 2);
         const filename = `CWT_Respaldo_${Date.now()}.json`;
