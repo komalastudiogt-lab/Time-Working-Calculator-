@@ -38,9 +38,17 @@ window.closeMenuModal = function() {
 
 window.exportData = function() {
     try {
+        let perfilObj = {};
+        try { perfilObj = JSON.parse(localStorage.getItem('wtc_perfil') || '{}'); } catch(e){ perfilObj = {}; }
+        
+        let jornadasArr = [];
+        try { jornadasArr = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]'); } catch(e){ jornadasArr = []; }
+
         const data = {
-            perfil: localStorage.getItem('wtc_perfil'),
-            jornadas: localStorage.getItem('wtc_jornadas')
+            version: "1.0",
+            app: "CWT",
+            perfil: perfilObj,
+            jornadas: jornadasArr
         };
         const jsonString = JSON.stringify(data, null, 2);
         const filename = `CWT_Respaldo_${Date.now()}.json`;
@@ -73,16 +81,40 @@ window.importData = function(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
-            const data = JSON.parse(e.target.result);
-            if(data.perfil) localStorage.setItem('wtc_perfil', data.perfil);
-            if(data.jornadas) localStorage.setItem('wtc_jornadas', data.jornadas);
-            cargarPerfil();
-            renderizarInicio();
-            renderizarInforme();
-            window.showToast('¡Datos restaurados con éxito!', 'task_alt');
+            const text = e.target.result;
+            const data = JSON.parse(text);
+            if(data) {
+                let pData = data.perfil;
+                if(pData) {
+                    if(typeof pData === 'string') {
+                        try { pData = JSON.parse(pData); } catch(ex){}
+                    }
+                    localStorage.setItem('wtc_perfil', JSON.stringify(pData));
+                }
+
+                let jData = data.jornadas;
+                if(jData) {
+                    if(typeof jData === 'string') {
+                        try { jData = JSON.parse(jData); } catch(ex){}
+                    }
+                    if(Array.isArray(jData)) {
+                        localStorage.setItem('wtc_jornadas', JSON.stringify(jData));
+                    }
+                }
+
+                cargarPerfil();
+                renderizarInicio();
+                renderizarInforme();
+                window.showToast('¡Datos restaurados con éxito!', 'task_alt');
+            } else {
+                window.showToast('Archivo de respaldo inválido', 'error');
+            }
         } catch(err) {
             window.showToast('Archivo de respaldo inválido', 'error');
         }
+    };
+    reader.onerror = function() {
+        window.showToast('Error leyendo el archivo', 'error');
     };
     reader.readAsText(file);
     window.closeMenuModal();
@@ -113,11 +145,16 @@ window.closeQuickRateModal = function() {
 
 window.saveQuickRate = function() {
     try {
-        let p = JSON.parse(localStorage.getItem('wtc_perfil')) || { nombre: 'Usuario', festivo: 100 };
+        let p = {};
+        try { p = JSON.parse(localStorage.getItem('wtc_perfil') || '{}'); } catch(e){ p = {}; }
+        p.nombre = p.nombre || 'Usuario';
+        p.festivo = p.festivo || 100;
+
         const mInput = document.getElementById('quick-moneda'); 
         const tInput = document.getElementById('quick-tarifa');
         if(mInput) p.moneda = mInput.value;
         if(tInput) p.tarifa = parseFloat(tInput.value) || 0;
+        
         localStorage.setItem('wtc_perfil', JSON.stringify(p));
         window.showToast('¡Tarifa actualizada!', 'verified_user');
         cargarPerfil();
@@ -358,194 +395,4 @@ if(formJornada) {
     formJornada.addEventListener('submit', function(event) {
         event.preventDefault(); 
         const fInput = document.getElementById('jornada-fecha'); const iInput = document.getElementById('jornada-inicio'); const hInput = document.getElementById('jornada-fin'); const pInput = document.getElementById('jornada-pausa'); const tInput = document.getElementById('jornada-tipo-festivo'); const nInput = document.getElementById('jornada-notas');
-        const fecha = fInput?fInput.value:''; const inicio = iInput?iInput.value:'00:00'; const fin = hInput?hInput.value:'00:00'; const pausaMinutos = pInput?parseInt(pInput.value)||0:0; const tipoFestivo = tInput?tInput.value:'none'; const notasUsuario = nInput?nInput.value:''; 
-        const perfil = JSON.parse(localStorage.getItem('wtc_perfil')) || { tarifa: 0, festivo: 0, moneda: '' };
-        
-        let [hIni, mIni] = inicio.split(':').map(Number); let [hFin, mFin] = fin.split(':').map(Number);
-        let minT1 = 0; let minT2 = 0; let cruza = false;
-
-        if ((hFin * 60 + mFin) <= (hIni * 60 + mIni) && inicio !== fin) { cruza = true; minT1 = (24 * 60) - (hIni * 60 + mIni); minT2 = (hFin * 60 + mFin); } 
-        else { minT1 = (hFin * 60 + mFin) - (hIni * 60 + mIni); }
-        let minTot = minT1 + minT2; if (minTot === 0 && inicio === fin) { minTot = 24 * 60; minT1 = 24 * 60; }
-        let r1 = minTot > 0 ? minT1 / minTot : 0; let r2 = minTot > 0 ? minT2 / minTot : 0;
-        let hrs1 = Math.max(0, minT1 - (pausaMinutos * r1)) / 60; let hrs2 = Math.max(0, minT2 - (pausaMinutos * r2)) / 60;
-        let tN = perfil.tarifa; let mF = perfil.festivo / 100;
-        let rec1 = 0; let rec2 = 0;
-
-        if (tipoFestivo === 'all') { rec1 = hrs1 * (tN * mF); rec2 = hrs2 * (tN * mF); } else if (tipoFestivo === 'start') { rec1 = hrs1 * (tN * mF); } else if (tipoFestivo === 'end' && cruza) { rec2 = hrs2 * (tN * mF); } else if (tipoFestivo === 'end' && !cruza) { rec1 = hrs1 * (tN * mF); }
-        let pBase = (hrs1 + hrs2) * tN; let totEst = pBase + rec1 + rec2; let hrsTrab = hrs1 + hrs2;
-
-        let fObj1 = new Date(fecha + 'T12:00:00'); let d1Str = fObj1.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }); let fMos = d1Str;
-        if (cruza) { let fObj2 = new Date(fObj1); fObj2.setDate(fObj2.getDate() + 1); let d2Str = fObj2.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }); fMos = `${d1Str} al ${d2Str}`; }
-
-        let subNot = 'Normal'; if(tipoFestivo === 'all') subNot = 'Festivo Completo'; else if(tipoFestivo === 'start') subNot = 'Festivo (Entrada)'; else if(tipoFestivo === 'end') subNot = 'Festivo (Salida)';
-        let nFin = notasUsuario ? `${subNot} | ${notasUsuario}` : subNot;
-
-        let estadoPagadoPrevio = false;
-        let hActual = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
-        if (idEditando) {
-            const existente = hActual.find(j => j.id === idEditando);
-            if (existente) estadoPagadoPrevio = !!existente.pagado;
-        }
-
-        const nJor = { id: idEditando ? idEditando : Date.now().toString(), fecha: fecha, fechaMostrar: fMos, inicio, fin, pausaMinutos, tipoFestivo: tipoFestivo, notas: nFin, horasTrabajadas: hrsTrab.toFixed(2), totalEstimado: totEst.toFixed(2), moneda: perfil.moneda, pagado: estadoPagadoPrevio };
-        let msjA = "";
-        
-        if (idEditando) { const idx = hActual.findIndex(j => j.id === idEditando); if(idx !== -1) hActual[idx] = nJor; msjA = `¡Turno actualizado!\nTotal: ${perfil.moneda} ${totEst.toFixed(2)}`; } 
-        else { hActual.push(nJor); msjA = `¡Turno guardado!\nTotal: ${perfil.moneda} ${totEst.toFixed(2)}`; }
-
-        localStorage.setItem('wtc_jornadas', JSON.stringify(hActual)); 
-        window.cancelarEdicion(); setTimeout(() => { window.showToast(msjA, 'task_alt'); }, 150);
-    });
-}
-
-// ==========================================
-// 7. LÓGICA DE INFORMES, CHART Y PDF (DIVIDIDO: POR COBRAR / PAGADOS + BOTÓN ELIMINAR)
-// ==========================================
-let workChartInstancia = null;
-
-window.renderizarInforme = function() {
-    const h = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
-    const p = JSON.parse(localStorage.getItem('wtc_perfil')) || { nombre: 'Usuario', moneda: '' };
-    const cTot = document.getElementById('resumen-totales'); 
-    const cTab = document.getElementById('tabla-informe');
-    const rPerfil = document.getElementById('reporte-perfil'); 
-    if(rPerfil) rPerfil.textContent = `Trabajador: ${p.nombre || 'No especificado'}`;
-    
-    const filtroDias = currentChartFilterValue;
-
-    if (h.length === 0) { 
-        if(cTot) cTot.innerHTML = ''; 
-        if(cTab) cTab.innerHTML = '<p style="text-align:center; color: var(--text-muted);">No hay datos para el informe.</p>'; 
-        if(workChartInstancia) workChartInstancia.destroy();
-        return; 
-    }
-
-    let jornadasOrdenadas = [...h].sort((a,b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-    
-    if(filtroDias !== 'all') {
-        const fechaLimite = new Date();
-        fechaLimite.setDate(fechaLimite.getDate() - parseInt(filtroDias));
-        jornadasOrdenadas = jornadasOrdenadas.filter(j => new Date(j.fecha) >= fechaLimite);
-    }
-
-    let tH = 0; let tD = 0; 
-    let porCobrarItems = [];
-    let pagadosItems = [];
-
-    const jInverso = [...jornadasOrdenadas].reverse();
-    
-    for (const j of jInverso) {
-        tH += parseFloat(j.horasTrabajadas); 
-        tD += parseFloat(j.totalEstimado);
-        
-        let fM = (j.tipoFestivo && j.tipoFestivo !== 'none') ? '*' : ''; 
-        let fVis = j.fechaMostrar || j.fecha;
-        let isPagado = j.pagado === true;
-        
-        let htmlItem = `
-            <div class="report-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem;">
-                <div style="flex: 1; min-width: 0;">
-                    <strong>${fVis}</strong> ${fM}<br>
-                    <span style="color: gray; font-size: 0.75rem;">${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</span>
-                </div>
-                <div style="text-align: right; margin-right: 10px;">
-                    ${j.horasTrabajadas} hrs<br>
-                    <strong>${p.moneda} ${j.totalEstimado}</strong>
-                </div>
-                <button onclick="eliminarJornada('${j.id}')" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer;">
-                    <span class="material-symbols-rounded" style="font-size: 18px;">delete</span>
-                </button>
-            </div>
-        `;
-
-        if (isPagado) {
-            pagadosItems.push(htmlItem);
-        } else {
-            porCobrarItems.push(htmlItem);
-        }
-    }
-
-    if(cTot) {
-        cTot.innerHTML = `<div><span class="material-symbols-rounded">schedule</span><br>Total Horas<span>${tH.toFixed(2)}</span></div><div><span class="material-symbols-rounded">payments</span><br>Total Ingresos<span>${p.moneda} ${tD.toFixed(2)}</span></div>`; 
-    }
-
-    let htmlCompleto = '';
-    htmlCompleto += `<div style="font-weight: 700; color: #d97706; margin-bottom: 5px; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;"><span class="material-symbols-rounded" style="font-size:18px;">schedule</span> Por Cobrar (${porCobrarItems.length})</div>`;
-    if(porCobrarItems.length > 0) {
-        htmlCompleto += porCobrarItems.join('');
-    } else {
-        htmlCompleto += `<p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 15px;">No hay turnos por cobrar en este período.</p>`;
-    }
-
-    htmlCompleto += `<div style="font-weight: 700; color: #059669; margin: 20px 0 5px 0; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;"><span class="material-symbols-rounded" style="font-size:18px;">check_circle</span> Pagados (${pagadosItems.length})</div>`;
-    if(pagadosItems.length > 0) {
-        htmlCompleto += pagadosItems.join('');
-    } else {
-        htmlCompleto += `<p style="color: #94a3b8; font-size: 0.8rem;">No hay turnos pagados en este período.</p>`;
-    }
-
-    if(cTab) cTab.innerHTML = htmlCompleto;
-
-    const chartLabels = [];
-    const chartData = [];
-    
-    const agrupado = {};
-    jornadasOrdenadas.forEach(j => {
-        let diaVisual = j.fecha.substring(5);
-        if(!agrupado[diaVisual]) agrupado[diaVisual] = 0;
-        agrupado[diaVisual] += parseFloat(j.horasTrabajadas);
-    });
-    
-    for(let date in agrupado) {
-        chartLabels.push(date);
-        chartData.push(agrupado[date]);
-    }
-
-    const ctx = document.getElementById('workChart');
-    if(workChartInstancia) workChartInstancia.destroy();
-    
-    if(ctx && window.Chart) {
-        workChartInstancia = new window.Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: chartLabels,
-                datasets: [{
-                    label: 'Horas Trabajadas',
-                    data: chartData,
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
-};
-
-window.descargarPDF = function() {
-    const e = document.getElementById('reporte-contenido'); const btn = document.querySelector('button[onclick="descargarPDF()"]'); 
-    if(!e || !btn) return;
-    const oTxt = btn.innerHTML; 
-    btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span> Generando...';
-    const opt = { margin: 15, filename: 'Reporte_WorkingTime.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }};
-    html2pdf().set(opt).from(e).toPdf().output('datauristring').then(function (pdf) {
-        try { 
-            if (window.NativeShare) { const b64 = pdf.split(',')[1]; const n = "Reporte_WorkingTime_" + Date.now() + ".pdf"; 
-                window.NativeShare(b64, n).then(() => { btn.innerHTML = oTxt; }).catch(err => { console.log(err); btn.innerHTML = oTxt; });
-            } else { 
-                html2pdf().set(opt).from(e).save().then(() => { btn.innerHTML = oTxt; }); }
-        } catch (error) { 
-        window.showToast('Error: ' + error, 'error'); btn.innerHTML = oTxt; }
-    }).catch(function(err) { 
-    window.showToast('Error PDF: ' + err, 'error'); btn.innerHTML = oTxt; });
-};
-
-initTimePicker(); cargarPerfil(); renderizarInicio(); renderizarInforme();
+        const fecha = fInput?fInput.value:''; const inicio = iInput?iInput.value:'00:00'; const fin = hInput?hInput.value:'00:00'; const pausaMinutos = pInput?parseInt(pInput.value)|
