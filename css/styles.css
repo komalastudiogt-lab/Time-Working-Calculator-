@@ -90,7 +90,6 @@ main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .jornada-info h4 { color: var(--white); font-size: 1rem; font-weight: 700; margin-bottom: 2px;}
 .jornada-info p { color: #94a3b8; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Insignia de estado de pago interactiva */
 .status-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; display: inline-block; cursor: pointer; margin-top: 4px; }
 .status-badge.pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
 .status-badge.paid { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
