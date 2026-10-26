@@ -254,6 +254,21 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmación de Borrado Personalizado -->
+    <div id="delete-confirm-modal" class="modal-overlay">
+        <div class="confirm-card">
+            <div class="confirm-icon">
+                <span class="material-symbols-rounded">warning</span>
+            </div>
+            <h3>¿Eliminar turno?</h3>
+            <p>Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar permanentemente esta jornada?</p>
+            <div class="time-picker-actions">
+                <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="button" class="btn-danger" onclick="confirmDeleteModal()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="custom-toast" class="toast-hidden">
         <span class="material-symbols-rounded" id="toast-icon">check_circle</span>
         <span id="toast-message">Mensaje</span>
