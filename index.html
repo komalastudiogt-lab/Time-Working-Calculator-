@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calculator Working Time</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=103">
+    <link rel="stylesheet" href="./css/styles.css?v=104">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
 <body>
 
     <header>
         <div class="header-content">
-            <span class="material-symbols-rounded menu-icon">sort</span>
+            <span class="material-symbols-rounded menu-icon" onclick="openMenuModal()" style="cursor: pointer;">sort</span>
             <h1 class="header-brand">CWT</h1>
-            <span class="material-symbols-rounded profile-icon">account_circle</span>
+            <span class="material-symbols-rounded profile-icon" onclick="openQuickRateModal()" style="cursor: pointer;">account_circle</span>
         </div>
     </header>
 
@@ -135,7 +135,6 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 class="section-title" style="margin: 0; font-size: 1.1rem;">Rendimiento</h2>
                         
-                        <!-- Selector personalizado de rendimiento -->
                         <div onclick="openChartFilterModal()" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; color: var(--main-dark); cursor: pointer; display: flex; align-items: center; gap: 6px;">
                             <span id="filtro-grafica-label">15 Días</span>
                             <span class="material-symbols-rounded" style="font-size: 18px; color: var(--accent-blue);">arrow_drop_down</span>
@@ -260,7 +259,6 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmación de Borrado Personalizado -->
     <div id="delete-confirm-modal" class="modal-overlay">
         <div class="confirm-card">
             <div class="confirm-icon">
@@ -275,7 +273,6 @@
         </div>
     </div>
 
-    <!-- Modal Selector de Filtro de Rendimiento -->
     <div id="chart-filter-modal" class="modal-overlay">
         <div class="confirm-card" style="width: 290px;">
             <h3 style="margin-bottom: 15px;">Seleccionar Período</h3>
@@ -288,13 +285,46 @@
         </div>
     </div>
 
+    <!-- NUEVO: Modal Menú Rápido (Ícono 3 barras) -->
+    <div id="menu-modal" class="modal-overlay">
+        <div class="confirm-card" style="width: 320px; text-align: left;">
+            <h3 style="text-align: center; margin-bottom: 20px;">Menú Rápido</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px;" onclick="exportData()"><span class="material-symbols-rounded" style="color:var(--accent-blue)">download</span> Respaldar Datos (Exportar)</button>
+                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px;" onclick="document.getElementById('import-file-input').click()"><span class="material-symbols-rounded" style="color:var(--accent-blue)">upload</span> Restaurar Datos (Importar)</button>
+                <input type="file" id="import-file-input" style="display: none;" accept=".json" onchange="importData(event)">
+                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px; border-color: #ef4444; color: #ef4444;" onclick="confirmClearHistoryModal()"><span class="material-symbols-rounded" style="color:#ef4444">delete_sweep</span> Borrar Todo el Historial</button>
+            </div>
+            <button type="button" class="btn-cancel" style="width:100%; border-radius:12px; padding: 12px; border:none; font-weight:600; cursor:pointer;" onclick="closeMenuModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- NUEVO: Modal Cambio Rápido de Tarifa (Ícono Perfil) -->
+    <div id="quick-rate-modal" class="modal-overlay">
+        <div class="confirm-card" style="width: 310px;">
+            <h3 style="margin-bottom: 20px;">Cambio Rápido de Tarifa</h3>
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; display: block;">Moneda</label>
+                <input type="text" id="quick-moneda" class="form-control" style="padding: 10px 14px; font-size: 0.95rem;" placeholder="Ej. Q o $">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; display: block;">Tarifa por hora</label>
+                <input type="number" id="quick-tarifa" class="form-control" style="padding: 10px 14px; font-size: 0.95rem;" placeholder="Ej. 15.00" step="0.01">
+            </div>
+            <div class="time-picker-actions">
+                <button type="button" class="btn-cancel" onclick="closeQuickRateModal()">Cancelar</button>
+                <button type="button" class="btn-confirm" onclick="saveQuickRate()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="custom-toast" class="toast-hidden">
         <span class="material-symbols-rounded" id="toast-icon">check_circle</span>
         <span id="toast-message">Mensaje</span>
     </div>
 
     <script src="./js/native-bridge.js"></script>
-    <script src="./js/app.js?v=103"></script>
+    <script src="./js/app.js?v=104"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
