@@ -38,13 +38,17 @@ window.closeMenuModal = function() {
 
 window.exportData = function() {
     try {
-        const perfilStr = localStorage.getItem('wtc_perfil') || '{}';
-        const jornadasStr = localStorage.getItem('wtc_jornadas') || '[]';
+        let perfilObj = {};
+        try { perfilObj = JSON.parse(localStorage.getItem('wtc_perfil') || '{}'); } catch(e){ perfilObj = {}; }
+        
+        let jornadasArr = [];
+        try { jornadasArr = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]'); } catch(e){ jornadasArr = []; }
+
         const data = {
             version: "1.0",
             app: "CWT",
-            perfil: JSON.parse(perfilStr),
-            jornadas: JSON.parse(jornadasStr)
+            perfil: perfilObj,
+            jornadas: jornadasArr
         };
         const jsonString = JSON.stringify(data, null, 2);
         const filename = `CWT_Respaldo_${Date.now()}.json`;
@@ -79,9 +83,25 @@ window.importData = function(event) {
         try {
             const text = e.target.result;
             const data = JSON.parse(text);
-            if(data && (data.perfil || data.jornadas)) {
-                if(data.perfil) localStorage.setItem('wtc_perfil', JSON.stringify(data.perfil));
-                if(data.jornadas) localStorage.setItem('wtc_jornadas', JSON.stringify(data.jornadas));
+            if(data) {
+                let pData = data.perfil;
+                if(pData) {
+                    if(typeof pData === 'string') {
+                        try { pData = JSON.parse(pData); } catch(ex){}
+                    }
+                    localStorage.setItem('wtc_perfil', JSON.stringify(pData));
+                }
+
+                let jData = data.jornadas;
+                if(jData) {
+                    if(typeof jData === 'string') {
+                        try { jData = JSON.parse(jData); } catch(ex){}
+                    }
+                    if(Array.isArray(jData)) {
+                        localStorage.setItem('wtc_jornadas', JSON.stringify(jData));
+                    }
+                }
+
                 cargarPerfil();
                 renderizarInicio();
                 renderizarInforme();
@@ -125,11 +145,16 @@ window.closeQuickRateModal = function() {
 
 window.saveQuickRate = function() {
     try {
-        let p = JSON.parse(localStorage.getItem('wtc_perfil')) || { nombre: 'Usuario', festivo: 100 };
+        let p = {};
+        try { p = JSON.parse(localStorage.getItem('wtc_perfil') || '{}'); } catch(e){ p = {}; }
+        p.nombre = p.nombre || 'Usuario';
+        p.festivo = p.festivo || 100;
+
         const mInput = document.getElementById('quick-moneda'); 
         const tInput = document.getElementById('quick-tarifa');
         if(mInput) p.moneda = mInput.value;
         if(tInput) p.tarifa = parseFloat(tInput.value) || 0;
+        
         localStorage.setItem('wtc_perfil', JSON.stringify(p));
         window.showToast('¡Tarifa actualizada!', 'verified_user');
         cargarPerfil();
@@ -218,13 +243,16 @@ if(formPerfil) {
     });
 }
 function cargarPerfil() {
-    const guardado = localStorage.getItem('wtc_perfil');
-    if (guardado) { const p = JSON.parse(guardado); 
-        const nInput = document.getElementById('perfil-nombre'); if(nInput) nInput.value = p.nombre || ''; 
-        const mInput = document.getElementById('perfil-moneda'); if(mInput) mInput.value = p.moneda || ''; 
-        const tInput = document.getElementById('perfil-tarifa'); if(tInput) tInput.value = p.tarifa || ''; 
-        const fInput = document.getElementById('perfil-festivo'); if(fInput) fInput.value = p.festivo || ''; 
-    }
+    try {
+        const guardado = localStorage.getItem('wtc_perfil');
+        if (guardado) { 
+            const p = JSON.parse(guardado); 
+            const nInput = document.getElementById('perfil-nombre'); if(nInput) nInput.value = p.nombre || ''; 
+            const mInput = document.getElementById('perfil-moneda'); if(mInput) mInput.value = p.moneda || ''; 
+            const tInput = document.getElementById('perfil-tarifa'); if(tInput) tInput.value = p.tarifa || ''; 
+            const fInput = document.getElementById('perfil-festivo'); if(fInput) fInput.value = p.festivo || ''; 
+        }
+    } catch(e) {}
 }
 
 let idEditando = null;
@@ -249,7 +277,12 @@ window.confirmDeleteModal = function() {
         renderizarInforme(); 
         window.showToast('Historial borrado', 'delete');
     } else if(idParaEliminar) {
-        let h = JSON.parse(localStorage.getItem('wtc_jornadas')) || []; 
+        let h = [];
+        try {
+            let raw = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]');
+            if(Array.isArray(raw)) h = raw;
+        } catch(e){ h = []; }
+        
         h = h.filter(j => j.id !== idParaEliminar);
         localStorage.setItem('wtc_jornadas', JSON.stringify(h)); 
         renderizarInicio(); 
@@ -261,7 +294,12 @@ window.confirmDeleteModal = function() {
 
 // === CAMBIAR ESTADO DE PAGO (POR COBRAR / PAGADO) ===
 window.toggleEstadoPago = function(id) {
-    let h = JSON.parse(localStorage.getItem('wtc_jornadas')) || [];
+    let h = [];
+    try {
+        let raw = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]');
+        if(Array.isArray(raw)) h = raw;
+    } catch(e){ h = []; }
+
     const j = h.find(x => x.id === id);
     if(j) {
         j.pagado = !j.pagado;
@@ -293,7 +331,13 @@ window.selectChartFilter = function(value, label) {
 };
 
 window.prepararEdicion = function(id) {
-    const h = JSON.parse(localStorage.getItem('wtc_jornadas')) || []; const j = h.find(x => x.id === id); if(!j) return;
+    let h = [];
+    try {
+        let raw = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]');
+        if(Array.isArray(raw)) h = raw;
+    } catch(e){ h = []; }
+
+    const j = h.find(x => x.id === id); if(!j) return;
     idEditando = id; 
     const fInput = document.getElementById('jornada-fecha'); if(fInput) fInput.value = j.fecha; 
     const iInput = document.getElementById('jornada-inicio'); if(iInput) iInput.value = j.inicio; 
@@ -320,17 +364,26 @@ window.cancelarEdicion = function() {
 
 function renderizarInicio() {
     const cont = document.getElementById('inicio-lista-jornadas'); if(!cont) return;
-    const h = JSON.parse(localStorage.getItem('wtc_jornadas')) || []; const p = JSON.parse(localStorage.getItem('wtc_perfil')) || { moneda: 'Q' };
+    
+    let h = [];
+    try {
+        let raw = JSON.parse(localStorage.getItem('wtc_jornadas') || '[]');
+        if(Array.isArray(raw)) h = raw;
+    } catch(e){ h = []; }
+
+    let p = { moneda: 'Q' };
+    try { p = JSON.parse(localStorage.getItem('wtc_perfil') || '{"moneda":"Q"}'); } catch(e){}
+
     const txtD = document.getElementById('inicio-total-dinero'); const txtH = document.getElementById('inicio-total-horas');
 
     let sumD = 0; let sumH = 0;
     if (h.length === 0) { 
         cont.innerHTML = '<p style="color: #64748b; text-align: center; margin-top: 20px;">No hay transacciones.</p>';
-        if(txtD) txtD.textContent = `${p.moneda} 0.00`; if(txtH) txtH.textContent = `0.00 hrs acumuladas`; return;
+        if(txtD) txtD.textContent = `${p.moneda || 'Q'} 0.00`; if(txtH) txtH.textContent = `0.00 hrs acumuladas`; return;
     }
 
     for (const j of h) { sumD += parseFloat(j.totalEstimado || 0); sumH += parseFloat(j.horasTrabajadas || 0); }
-    if(txtD) txtD.textContent = `${p.moneda} ${sumD.toFixed(2)}`; if(txtH) txtH.textContent = `${sumH.toFixed(2)} hrs acumuladas`;
+    if(txtD) txtD.textContent = `${p.moneda || 'Q'} ${sumD.toFixed(2)}`; if(txtH) txtH.textContent = `${sumH.toFixed(2)} hrs acumuladas`;
 
     const hInv = [...h].reverse(); 
     cont.innerHTML = ''; 
@@ -351,7 +404,7 @@ function renderizarInicio() {
                     <p>${j.inicio} - ${j.fin} | ${j.notas || 'Turno Regular'}</p>
                     <span class="status-badge ${badgeClass}" onclick="toggleEstadoPago('${j.id}')">${badgeText}</span>
                 </div>
-                <div class="jornada-amount"><h4>${j.moneda} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
+                <div class="jornada-amount"><h4>${j.moneda || p.moneda || 'Q'} ${j.totalEstimado}</h4><p>+${j.horasTrabajadas}h</p></div>
             </div>
             <div class="swipe-actions">
                 <button onclick="prepararEdicion('${j.id}')" class="swipe-btn edit"><span class="material-symbols-rounded">edit</span></button>
@@ -367,15 +420,4 @@ if(formJornada) {
     let hoyJ = new Date(); hoyJ.setMinutes(hoyJ.getMinutes() - hoyJ.getTimezoneOffset());
     const fInput = document.getElementById('jornada-fecha'); if(fInput) fInput.value = hoyJ.toISOString().split('T')[0];
 
-    formJornada.addEventListener('submit', function(event) {
-        event.preventDefault(); 
-        const fInput = document.getElementById('jornada-fecha'); const iInput = document.getElementById('jornada-inicio'); const hInput = document.getElementById('jornada-fin'); const pInput = document.getElementById('jornada-pausa'); const tInput = document.getElementById('jornada-tipo-festivo'); const nInput = document.getElementById('jornada-notas');
-        const fecha = fInput?fInput.value:''; const inicio = iInput?iInput.value:'00:00'; const fin = hInput?hInput.value:'00:00'; const pausaMinutos = pInput?parseInt(pInput.value)||0:0; const tipoFestivo = tInput?tInput.value:'none'; const notasUsuario = nInput?nInput.value:''; 
-        const perfil = JSON.parse(localStorage.getItem('wtc_perfil')) || { tarifa: 0, festivo: 0, moneda: '' };
-        
-        let [hIni, mIni] = inicio.split(':').map(Number); let [hFin, mFin] = fin.split(':').map(Number);
-        let minT1 = 0; let minT2 = 0; let cruza = false;
-
-        if ((hFin * 60 + mFin) <= (hIni * 60 + mIni) && inicio !== fin) { cruza = true; minT1 = (24 * 60) - (hIni * 60 + mIni); minT2 = (hFin * 60 + mFin); } 
-        else { minT1 = (hFin * 60 + mFin) - (hIni * 60 + mIni); }
-        let minTot = minT1 + minT2; if (minTot === 0 && inicio === fin) { minTot = 24 * 60;
+    formJornada.addEventListener('submit', functio
