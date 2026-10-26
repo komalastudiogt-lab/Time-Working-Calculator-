@@ -13,7 +13,6 @@
   --shadow-dark: 0 -10px 20px rgba(0,0,0,0.1);
 }
 
-/* Evitar selección y copiado de texto en toda la app por defecto */
 * { 
   margin: 0; padding: 0; box-sizing: border-box; 
   font-family: system-ui, -apple-system, sans-serif; 
@@ -22,7 +21,6 @@
   user-select: none; 
 }
 
-/* Permitir selección únicamente en inputs y textareas */
 input, textarea {
   -webkit-user-select: text;
   user-select: text;
