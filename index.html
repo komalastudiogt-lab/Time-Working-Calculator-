@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calculator Working Time</title>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/styles.css?v=109">
+    <link rel="stylesheet" href="./css/styles.css?v=110">
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 </head>
 <body>
@@ -63,7 +63,7 @@
                 <div class="form-container">
                     <h2 class="section-title">Registrar Jornada</h2>
                     
-                    <button type="button" class="btn-secondary" style="margin-top: 0; margin-bottom: 20px; border-color: var(--accent-blue); color: var(--accent-blue);" onclick="setNowTime()">
+                    <button type="button" class="btn-secondary" style="margin-top: 0; margin-bottom: 20px; border-color: var(--accent-blue); color: var(--accent-light);" onclick="setNowTime()">
                         <span class="material-symbols-rounded">bolt</span> Rellenar con Hora Actual
                     </button>
 
@@ -104,11 +104,11 @@
                             <label>Recargo Festivo</label>
                             <div class="input-wrapper">
                                 <span class="material-symbols-rounded">celebration</span>
-                                <select id="jornada-tipo-festivo" class="form-control" style="appearance: auto; cursor: pointer; color: var(--main-dark);">
-                                    <option value="none">Día normal (Sin recargo)</option>
-                                    <option value="all">Todo el turno es festivo</option>
-                                    <option value="start">Solo entrada (Antes de medianoche)</option>
-                                    <option value="end">Solo salida (Después de medianoche)</option>
+                                <select id="jornada-tipo-festivo" class="form-control" style="appearance: auto; cursor: pointer; color: var(--white);">
+                                    <option value="none" style="color: #030407;">Día normal (Sin recargo)</option>
+                                    <option value="all" style="color: #030407;">Todo el turno es festivo</option>
+                                    <option value="start" style="color: #030407;">Solo entrada (Antes de medianoche)</option>
+                                    <option value="end" style="color: #030407;">Solo salida (Después de medianoche)</option>
                                 </select>
                             </div>
                         </div>
@@ -321,8 +321,7 @@
         <span id="toast-message">Mensaje</span>
     </div>
 
-    <script src="./js/native-bridge.js"></script>
-    <script src="./js/app.js?v=109"></script>
+    <script src="./js/app.js?v=110"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
