@@ -135,9 +135,9 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h2 class="section-title" style="margin: 0; font-size: 1.1rem;">Rendimiento</h2>
                         
-                        <div onclick="openChartFilterModal()" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; color: var(--main-dark); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <div onclick="openChartFilterModal()" style="background: #0b0f19; border: 1px solid #1e293b; border-radius: 12px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; color: var(--white); cursor: pointer; display: flex; align-items: center; gap: 6px;">
                             <span id="filtro-grafica-label">15 Días</span>
-                            <span class="material-symbols-rounded" style="font-size: 18px; color: var(--accent-blue);">arrow_drop_down</span>
+                            <span class="material-symbols-rounded" style="font-size: 18px; color: var(--accent-light);">arrow_drop_down</span>
                         </div>
                     </div>
                     <div style="position: relative; height: 180px; width: 100%;">
@@ -150,7 +150,7 @@
                     
                     <div id="reporte-contenido" class="report-box">
                         <div class="report-header">
-                            <span class="material-symbols-rounded" style="font-size: 40px; color: var(--accent-blue);">description</span>
+                            <span class="material-symbols-rounded" style="font-size: 40px; color: var(--accent-light);">description</span>
                             <h3>Reporte de Horas</h3>
                             <p id="reporte-perfil"></p>
                         </div>
@@ -289,8 +289,8 @@
         <div class="confirm-card" style="width: 320px; text-align: left;">
             <h3 style="text-align: center; margin-bottom: 20px;">Menú Rápido</h3>
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px;" onclick="exportData()"><span class="material-symbols-rounded" style="color:var(--accent-blue)">download</span> Respaldar Datos (Exportar)</button>
-                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px;" onclick="document.getElementById('import-file-input').click()"><span class="material-symbols-rounded" style="color:var(--accent-blue)">upload</span> Restaurar Datos (Importar)</button>
+                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px;" onclick="exportData()"><span class="material-symbols-rounded" style="color:var(--accent-light)">download</span> Respaldar Datos (Exportar)</button>
+                <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px;" onclick="document.getElementById('import-file-input').click()"><span class="material-symbols-rounded" style="color:var(--accent-light)">upload</span> Restaurar Datos (Importar)</button>
                 <input type="file" id="import-file-input" style="display: none;" accept=".json" onchange="importData(event)">
                 <button type="button" class="btn-secondary" style="margin-top:0; justify-content: flex-start; gap: 12px; border-color: #ef4444; color: #ef4444;" onclick="confirmClearHistoryModal()"><span class="material-symbols-rounded" style="color:#ef4444">delete_sweep</span> Borrar Todo el Historial</button>
             </div>
